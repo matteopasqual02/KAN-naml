@@ -1,0 +1,19 @@
+\textcolor{blue}{
+Before presenting the theorem-proof, we outline the following points:
+\begin{itemize}
+    \item If domain $[0,1]^n$ is compact and $f$ is continuous on this compact set then $f$ is uniformly continuous.
+    \item Multivariate functions can be decomposed into sums of univariate functions.
+\end{itemize}
+\begin{proof}
+We will construct the functions $\phi_{p,q}$ and $\Phi_p$ step by step, using the fact that a continuous function on a compact domain can be approximated by a suitable combination of univariate functions. The goal is to approximate $f$ using univariate functions $\phi_{p,q}$ (Inner Functions) and a continuous aggregation function $\Phi_p$ (Outer Functions).
+A. \textbf{Constructing $\phi_{p,q}$}(Inner Functions)
+Kolmogorov introduced a specific mapping of the domain into 1D intervals. For example, divide the domain $[0, 1]^n$ into slices along one coordinate, say $x_1$, and map the slices to a function $\phi_{1,1}(x_1)$. Repeat for $x_2,x_3,\ldots,x_n$ to construct a set of univariate functions $\phi_{p,q}(x_q)$ for all $p$ and $q$.
+B. \textbf{Constructing $\Phi_p$}(Outer Functions)
+The outer function $\Phi_p$ aggregates the sums of the inner functions $\phi_{p,q}$. Specifically, for the given function $f(x_1, \ldots,x_n)$, we define $\Phi_p$ as a reconstruction rule based on the combined outputs of $\phi_{p,q}$
+4. \textbf{Proving Continuity}
+By uniform continuity of $f$, the functions $\phi_{p,q}$ and $\Phi_p$
+can be chosen to ensure that their composition is continuous. Specifically, ensure that small changes in inputs $x_q$ lead to small changes in $\phi_{p,q}(x_q)$ and $\Phi_{p}(\textbf{x})$, preserving the continuity of $f$.
+5. \textbf{Ensuring Uniqueness of Representation}
+Kolmogorov showed that at most $2n+1$ inner functions are required. The choice of $\phi_{p,q}$ and $\Phi_{p}$is not unique, but the representation always exists
+\end{proof}
+}
