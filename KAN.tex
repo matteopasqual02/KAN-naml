@@ -210,7 +210,7 @@ where:
 \begin{itemize}
     \item $w_b$ and $w_s$ are learnable weights; in principle are redundant since they can be absorbed into $b(x)$ and $spline(x)$, we still include these factors to better control the overall magnitude. In particular, $w_s$ is very useful to scale the spline function.
     \item $b(x)$ is a fixed function called residual connection function defined by the silu function $b(x) = silu(x) = \frac{x}{1+e^{-x}}$. It is the counterpart of biases in MLPs.
-    \item $spline(x)$ that is the learnable function where the real power of KANs came from. In most of the cases is parametrized as a linear combination of B-splines functions ($B_i$) $spline(x)= \sum_i^k c_iB_i(x)$ where $c_i$s are learnable and $k$ is the spline order.
+    \item $spline(x)$ that is the learnable function where the real power of KANs came from. In most of the cases is parametrized as a linear combination of B-splines functions ($B_i$) and defining $c_i$s the learnable B-splines points and $k$ is the spline order $spline(x)= \sum_i^k c_iB_i(x)$.
 \end{itemize}
 
 \subsection{Bézier and B-splines functions}
@@ -220,7 +220,7 @@ Given the spline function now we have to define its shape. In literature, two ma
     \item B-splines functions which consider only a local domain but are easy to train \cite{kan_intro}.
 \end{itemize}
 
-The problem we are going to solve is that the spline function should pass through some tag points that will be adjusted during the training phase. To solve it let's consider a dual problem: imagine a character $C$ must pass through $n$ points $(P_1, \dots,P_n)$. The most obvious way to traverse them is to go straight from $P_i$ to $P_{i+1}$ but this movement does not appear natural because we desire a smooth traversal movement that can be described as $(n-1)$-degree polynomial as in Figure \ref{fig:bezier}.  
+The problem we are going to solve is that the spline function should pass through some tag points that will be adjusted during the training phase. To solve it let's consider a dual problem: imagine a character $C$ must pass through $n$ points $(P_1, \dots,P_n)$. The most obvious way to traverse them is to go straight from $P_i$ to $P_{i+1}$ but this movement does not appear natural because we desire a smooth traversal movement that can be described as $(n-1)$-degree polynomial as in Figure~\ref{fig:bezier}.  
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{Images/bezier.png}
@@ -278,14 +278,14 @@ When we have $n$ control points and we create $k$ degree polynomial Bézier curv
     \item Curvature Continuity: $C^2$ Continuity 
 \end{itemize}
 
-Similar to Bézier curves, we define the B-spline curve \( B(t): \Re \to \Re \) as a linear combination of the learnable position of points \( P_i \) and their associated non-learnable basis functions \( N_{i,k} \):
+Similar to Bézier curves, we define the B-spline curve \( B(x): \Re \to \Re \) as a linear combination of the learnable position of points \( P_i \) and their associated non-learnable basis functions \( N_{i,k} \):
 
 
 \[
-\mathbf{B_i}(t) = \sum_{i=0}^n \mathbf{P}_i N_{i,k} = \sum_{i=0}^n c_i B_{i}(k)
+\mathbf{B_i}(x) = \sum_{i=0}^n P_i N_{i,k} \Rightarrow \textbf{splines}(x ) = \sum_{i=0}^k c_i B_{i}(x) = \sum_{i=0}^k c_i \sum_{i=0}^n P_i N_{i,k}
 \]
 
-Finally, B-spline functions are the best choice for KANs, even though they consider only a local domain, because their strength lies in their easy trainability, even as the number of points increases.
+Finally, we have defined spline as a B-spline function linear combination. This is best choice for KANs, even though they consider only a local domain, because their strength lies in their easy trainability, even as the number of points increases.
 
 
 \subsection{Initialization and training}
@@ -303,21 +303,31 @@ The only trainable part of a KAN network is the set of activation functions. In 
 Once the initialization has been defined, the KAN can be trained just like any other neural network. In particular for $N_{epochs}$ we will perform:
 \begin{itemize}
     \item Forward propagation computing $KAN(\textbf{x}) = \boldsymbol{\Phi_{L-1}} \times \dots \times \boldsymbol{\Phi_{1}} \times \boldsymbol{\Phi_{0}} \times \textbf{x}$
-    \item Backword propagation computing the loss with the LSM or the cross-entropy method and then adjusting $w_b$ and $c_i \in splines(x)$ with some method as GD, SGD, NM, or others. The parameter $w_s$ will only be modified if the spline activation values evolve
-    out of the fixed region during training.
+    \item Backword propagation computing the loss with the LSM or the cross-entropy method and then adjusting $w_b$ and $ splines(x)$ with some method as GD, SGD, NM, BFGS, or others. The parameter $w_s$, which is a scale factor, will only be modified if the spline activation values evolve out of the fixed region during training.
 \end{itemize}
 
 \subsection{Hyperparameters and complexity}
 The hyperparameters of a Kolmogorov-Arnold network are:
 \begin{itemize}
     \item \textbf{L}: the depth of the KAN
-    \item \textbf{N} = $\textbf{n}_0$, ... ,$\textbf{n}_l$: width of each layer
-    \item \textbf{G},\textbf{k}: each spline is of order k (usually k = 3) on G intervals.
+    \item \textbf{N} $ \in \{\textbf{n}_0$, ... ,$\textbf{n}_l\}$: width of each layer
+    \item \textbf{k}: each spline is a linear combination of k B-splines. Usually, k is very small for instance $k=3$.
+    \item \textbf{G}: each B-splines has G control points
 \end{itemize}
 
-Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k} will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast an MLP with hyperparameters \textbf{L, N} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability \cite{KAN}. 
+Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k}, considering $N$ as the biggest $n_i \in N$, we will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast, an MLP with hyperparameters \textbf{L, N} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability \cite{KAN}. 
 
-\subsection{Performance}
+\subsubsection{Performance}
+The most important Paper~\cite{KAN} has presented many performance-related results that compare the performance of KANs with MLP on various dummy/toy datasets. We will demonstrate that KANs are more effective when we want to perform non-linear regression or PDE solving.
+
+In all the plots we can see that
+\begin{itemize}
+    \item KANs consistently outperform MLPs, achieving significantly lower test loss across a range of parameters, and at much lower network depth (number of layers).
+    \item KANs demonstrate superior efficiency, with steeper declines in loss, particularly noticeable with fewer parameters.
+    \item MLP's performance almost stagnates with increasing the number of parameters.
+    \item The theoretical lines $N^{-4}$ for KAN and $N^{-2}$ for ideal models (ID), show that KANs closely follow their expected theoretical performance.
+\end{itemize}
+
 \section{Advanced Techniques}
 \section{Conclusions}
 
