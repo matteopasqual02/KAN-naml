@@ -17,3 +17,10 @@ can be chosen to ensure that their composition is continuous. Specifically, ensu
 Kolmogorov showed that at most $2n+1$ inner functions are required. The choice of $\phi_{p,q}$ and $\Phi_{p}$is not unique, but the representation always exists
 \end{proof}
 }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{B-splines}
+B-splines are essentially curves made up of polynomial segments, each with a specified level of smoothness. Picture each segment as a small curve, where multiple control points influence the shape. Unlike simpler spline curves, which rely on only two control points per segment, B-splines use more, leading to smoother and more adaptable curves.
+
+The main advantage of b-splines lies in their local impact. Adjusting one control point affects only the nearby section of the curve, leaving the rest undisturbed. This property offers remarkable advantages, especially in maintaining smoothness and facilitating differentiability, which is crucial for effective backpropagation during training.
