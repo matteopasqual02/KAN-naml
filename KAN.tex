@@ -112,7 +112,7 @@ with continuous one–dimensional inner functions $\phi_{q,p}:[0,1] -> \Re$ and 
 
 In a sense, they showed that the only true multivariate function is addition since every other function can be written using univariate functions and sum. The great advantage is that we have to learn only a polynomial number of 1D functions. However, these 1D functions can be non-smooth and even fractal, so they may not be learnable; in practice with spline function, we can approximate their shapes and achieve the accuracy that we want \cite{KAN}.
 
-\subsection{Matrix form}
+\subsection{KAN matrix form}
 \label{sec:ma}
 For a more formal definition, we define the representation matrix of the Kolmogorov-Arnold representation theorem ( $f: [0,1]^n \rightarrow \Re$ ) \cite{KAN}:
 
@@ -130,7 +130,14 @@ where $\textbf{x} \in \Re^n$, $\boldsymbol{\Phi_{in}} \in \Re^{2n+1,n}$, and $\b
 \quad \boldsymbol{\Phi_{in}} = (\Phi_{1}(\cdot) \dots \Phi_{2n+1}(\cdot))
 \]
 
-We notice that both $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ are special cases of the following function matrix $\boldsymbol{\Phi} \in \Re^{n_{out},n_{in}}$ that represent a general Kolmogorov-Arnold layer. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/A.JPG}
+    \caption{ MLPs vs KANs: Shallow model}
+\end{figure}
+
+\subsubsection{KAN layer form}
+We notice that both matrices $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ are special cases of the matrix $\boldsymbol{\Phi} \in \Re^{n_{out},n_{in}}$ that represent a general Kolmogorov-Arnold layer. 
 
 \[
 \boldsymbol{\Phi} = 
@@ -141,7 +148,7 @@ We notice that both $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ are s
 \end{pmatrix} 
 \]
 
-so each layer map the input of layer $l$ $\textbf{x}_l$ to the output $\textbf{x}_{l+1}$ thought $\boldsymbol{\Phi}$:
+so each layer map his input $l$ $\textbf{x}_l$ to the output $\textbf{x}_{l+1}$ thought $\boldsymbol{\Phi}$:
 
 \[
 \textbf{x}_{l+1} = \boldsymbol{\Phi} \times \textbf{x}_l \Rightarrow
@@ -185,6 +192,12 @@ The network structure will be only a series of matrix-matrix multiplication of $
 
 $$MLP(\textbf{x}) = \boldsymbol{W_{L-1}} \times \sigma \times \dots \times \boldsymbol{W_{1}} \times \sigma \times\boldsymbol{W_{0}} \times \textbf{x}$$
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/B.JPG}
+    \caption{ MLPs vs KANs: Deep model }
+\end{figure}
+
 Finally, a KAN can be conceptualized as a structured stack of KAN layers. Each KAN layer can be represented as a fully connected layer where every edge is associated with a one-dimensional (1D) function. The critical components that need to be defined are the representation and training of these activation functions which are the only learnable part of the function.
 
 \subsection{Activation functions}
@@ -195,9 +208,9 @@ $$\phi(x) = w_bb(x) + w_sspline(x) $$
 
 where:
 \begin{itemize}
-    \item $w_b$ and $w_s$ are learnable weights; in principle are redundant since they can be absorbed into $b(x)$ and $spline(x)$, we still include these factors to better control the overall magnitude.
-    \item $b(x)$ is a fixed function called residual connection function defined by the $silu(x)$ function $b(x) = silu(x) = \frac{x}{1+e^{-x}}$
-    \item $spline(x)$ that is the real learnable function and in most of the cases is parametrized as a linear combination of B-splines function $spline(x)= \sum_i c_iB_i(x)$ where $c_i$s a re learnable and $i$ is the spline order.
+    \item $w_b$ and $w_s$ are learnable weights; in principle are redundant since they can be absorbed into $b(x)$ and $spline(x)$, we still include these factors to better control the overall magnitude. In particular, $w_s$ is very useful to scale the spline function.
+    \item $b(x)$ is a fixed function called residual connection function defined by the silu function $b(x) = silu(x) = \frac{x}{1+e^{-x}}$. It is the counterpart of biases in MLPs.
+    \item $spline(x)$ that is the learnable function where the real power of KANs came from. In most of the cases is parametrized as a linear combination of B-splines functions ($B_i$) $spline(x)= \sum_i^k c_iB_i(x)$ where $c_i$s are learnable and $k$ is the spline order.
 \end{itemize}
 
 \subsection{Bézier and B-splines functions}
@@ -207,7 +220,7 @@ Given the spline function now we have to define its shape. In literature, two ma
     \item B-splines functions which consider only a local domain but are easy to train \cite{kan_intro}.
 \end{itemize}
 
-The problem we are going to solve is that the spline function should pass through some tag points that will be adjusted during the training phase. To solve it let's consider a dual problem: imagine a character $C$ must pass through $n$ points $(P_1, \dots,P_n)$. The most obvious way to traverse them is to go straight from $P_i$ to $P_{i+1}$ but this movement does not appear natural because we desire a smooth traversal movement that can be described as $(n-1)$-degree polynomial as in Figure~\ref{fig:bezier}.  
+The problem we are going to solve is that the spline function should pass through some tag points that will be adjusted during the training phase. To solve it let's consider a dual problem: imagine a character $C$ must pass through $n$ points $(P_1, \dots,P_n)$. The most obvious way to traverse them is to go straight from $P_i$ to $P_{i+1}$ but this movement does not appear natural because we desire a smooth traversal movement that can be described as $(n-1)$-degree polynomial as in Figure \ref{fig:bezier}.  
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{Images/bezier.png}
@@ -265,17 +278,34 @@ When we have $n$ control points and we create $k$ degree polynomial Bézier curv
     \item Curvature Continuity: $C^2$ Continuity 
 \end{itemize}
 
-Similar to Bézier curves, we define the B-spline curve \( B(t): \mathbb{R} \to \mathbb{R} \) as a linear combination of the points \( P_i \) and their associated basis functions:
+Similar to Bézier curves, we define the B-spline curve \( B(t): \Re \to \Re \) as a linear combination of the learnable position of points \( P_i \) and their associated non-learnable basis functions \( N_{i,k} \):
 
 
 \[
-\mathbf{B}(t) = \sum_{i=0}^n \mathbf{P}_i N_{i,k},
+\mathbf{B_i}(t) = \sum_{i=0}^n \mathbf{P}_i N_{i,k} = \sum_{i=0}^n c_i B_{i}(k)
 \]
 
 Finally, B-spline functions are the best choice for KANs, even though they consider only a local domain, because their strength lies in their easy trainability, even as the number of points increases.
 
 
 \subsection{Initialization and training}
+After defining all the components of the network and their connections, we will explain how training is performed. The key idea behind the training process is to make the positions of the control points $P_i$ in the activation function learnable, allowing the model to adapt and learn any arbitrary shape for the activation function that best fits the data. \cite{KAN,kan_intro}
+
+\subsubsection{Inizialization}
+The only trainable part of a KAN network is the set of activation functions. In particular, for each activation function, we will train the weights $w_b$ and $w_s$ and the spline function $spline(x)$. 
+\begin{itemize}
+    \item We initialize the scaling factor for the spline function at 1: $w_s=1$. 
+    \item Each spline function is initialized with $spline(x) \approx 0$.  This is done by drawing B-spline coefficients $c_i \sim \mathcal{N}(0, \sigma^2)$ with a small $\sigma$ around 0.1. It's likely used to ensure symmetry and stability in early training stages.
+    \item We initialize the scaling factor for the residual connection function with the Xavier initialization as in MLPs: $w_b \sim \mathcal{U}\left[-\sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}}, \sqrt{\frac{6}{n_{\text{in}} + n_{\text{out}}}}\right]$ where $n_{in}$ and $n_{out}$ are specific for any layers.
+\end{itemize}
+
+\subsubsection{Training}
+Once the initialization has been defined, the KAN can be trained just like any other neural network. In particular for $N_{epochs}$ we will perform:
+\begin{itemize}
+    \item Forward propagation computing $KAN(\textbf{x}) = \boldsymbol{\Phi_{L-1}} \times \dots \times \boldsymbol{\Phi_{1}} \times \boldsymbol{\Phi_{0}} \times \textbf{x}$
+    \item Backword propagation computing the loss with the LSM or the cross-entropy method and then adjusting $w_b$ and $c_i \in splines(x)$ with some method as GD, SGD, NM, or others. The parameter $w_s$ will only be modified if the spline activation values evolve
+    out of the fixed region during training.
+\end{itemize}
 
 \subsection{Hyperparameters and complexity}
 The hyperparameters of a Kolmogorov-Arnold network are:
@@ -287,7 +317,8 @@ The hyperparameters of a Kolmogorov-Arnold network are:
 
 Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k} will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast an MLP with hyperparameters \textbf{L, N} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability \cite{KAN}. 
 
-
+\subsection{Performance}
+\section{Advanced Techniques}
 \section{Conclusions}
 
 %--------------
