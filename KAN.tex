@@ -64,7 +64,7 @@
 \input{Configuration_files/title_page}
 
 %--------------
-% INTRODUCTION
+% PAPER
 %--------------
 \section{Introduction}
 \label{sec:in}
@@ -87,18 +87,16 @@ Throughout this paper, we will show that KANs can lead to higher accuracy and im
     \label{fig:MLPKAN}
 \end{figure}
 
-%--------------
-% Kolmogorov-Arnold
-%--------------
 \section{Kolmogorov-Arnold representation theorem}
 \label{sec:ka}
 Whereas Multi-layer perceptrons (MLPs) are inspired by the universal approximation theorem, Kolmogorov-Arnold Networks (KANs) are inspired by the Kolmogorov-Arnold representation theorem \cite{KAN}.
 
-Firstly, we start with the basic concept that a neural network can be described as a multivariate continuous function $f: \Re^n \rightarrow \Re^m $ that maps an input vector $\textbf{x}\in \Re^n$ to an output vector $\textbf{y}\in \Re^m$ via a series of computations. In particular, both MLPs and KANs can be described as a multivariate continuous function $f: \Re^n \rightarrow \Re $ that maps an input vector $\textbf{x}\in \Re^n$ to an output value $y\in \Re$ via a series of computations \cite{book1NAML, book2NAML}.
+Firstly, we start with the basic concept that a neural network can be described as a multivariate continuous function $f: \Re^n \rightarrow \Re^m $ that maps an input vector $\textbf{x}\in \Re^n$ to an output vector $\textbf{y}\in \Re^m$ via a series of computations. In particular, both MLPs and KANs can be described as a multivariate continuous function $f: \Re^n \rightarrow \Re $ that maps an input vector $\textbf{x}\in \Re^n$ to an output value $y\in \Re$ via a series of computations: $f(x) \equiv KAN(x)$ \cite{book1NAML, book2NAML}.
 
 As in MLP when input variables are combined linearly we have to standardize inputs passing from a domain $D \subset \Re^n$ to a compact domain $D \subset [0,1]^n $. A possibility is to apply an affine transformation to the data so that each feature will be normalized in $[0,1] \in 
  \Re$.
 
+\subsection{Theorem}
 We can now formally present and demonstrate the Kolmogorov-Arnold representation theorem. 
 
 The Kolmogorov-Arnold representation theorem is essential for proving that any neural network that has one output (for instance MLPs) can always be rebuilt as two-hidden-layer KANs. In particular, the Kolmogorov-Arnold representation theorem states that if $f$ is a multivariate continuous function on a bounded domain, then it can be written as a finite composition of continuous functions of a single variable and the binary operation of addition \cite{KAtheorem, KArevisited}.
@@ -115,7 +113,8 @@ with continuous one–dimensional inner functions $\phi_{q,p}:[0,1] -> \Re$ and 
 In a sense, they showed that the only true multivariate function is addition since every other function can be written using univariate functions and sum. The great advantage is that we have to learn only a polynomial number of 1D functions. However, these 1D functions can be non-smooth and even fractal, so they may not be learnable; in practice with spline function, we can approximate their shapes and achieve the accuracy that we want \cite{KAN}.
 
 \subsection{Matrix form}
-For a better representation, the Kolmogorov-Arnold representation of $f: [0,1]^n \rightarrow \Re$ can be written in matrix form \cite{KAN}:
+\label{sec:ma}
+For a more formal definition, we define the representation matrix of the Kolmogorov-Arnold representation theorem ( $f: [0,1]^n \rightarrow \Re$ ) \cite{KAN}:
 
 $$f(\textbf{x}) = \boldsymbol{\Phi_{out}} \times \boldsymbol{\Phi_{in} }\times \textbf{x}$$
 
@@ -131,7 +130,7 @@ where $\textbf{x} \in \Re^n$, $\boldsymbol{\Phi_{in}} \in \Re^{2n+1,n}$, and $\b
 \quad \boldsymbol{\Phi_{in}} = (\Phi_{1}(\cdot) \dots \Phi_{2n+1}(\cdot))
 \]
 
-We can notice that both $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ are special cases of the following function matrix $\boldsymbol{\Phi}$ that represent a general Kolmogorov-Arnold layer. 
+We notice that both $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ are special cases of the following function matrix $\boldsymbol{\Phi} \in \Re^{n_{out},n_{in}}$ that represent a general Kolmogorov-Arnold layer. 
 
 \[
 \boldsymbol{\Phi} = 
@@ -139,25 +138,83 @@ We can notice that both $\boldsymbol{\Phi_{in}}$ and $\boldsymbol{\Phi_{out}}$ a
 \phi_{1,1}(\cdot) & \dots & \phi_{1,n_{in}}(\cdot) \\
 \vdots &   & \vdots \\
 \phi_{n_{out},1}(\cdot) & \dots & \phi_{n_{out},n_{in}}(\cdot)
-\end{pmatrix}
+\end{pmatrix} 
+\]
+
+so each layer map the input of layer $l$ $\textbf{x}_l$ to the output $\textbf{x}_{l+1}$ thought $\boldsymbol{\Phi}$:
+
+\[
+\textbf{x}_{l+1} = \boldsymbol{\Phi} \times \textbf{x}_l \Rightarrow
+\textbf{x}_{l+1} = 
+\begin{pmatrix}
+\phi_{1,1}(\cdot) & \dots & \phi_{1,n_{in}}(\cdot) \\
+\vdots &   & \vdots \\
+\phi_{n_{out},1}(\cdot) & \dots & \phi_{n_{out},n_{in}}(\cdot)
+\end{pmatrix} \textbf{x}_l
 \]
 
 
-Each layer has $n_{in}$ inputs and $n_{out}$ outputs then in our case, the two layers are defined as follows:
+Each layer has $n_{in}$ inputs and $n_{out}$ outputs and is mapped thought its respective layer matrix. In our case, the two layers are defined as follows:
 \begin{itemize}
     \item Layer 1: $\boldsymbol{\Phi_{in}}$ has $\boldsymbol{\Phi}$ with $n_{in} = n$ and $n_{out} = 2n+1$
     \item Layer 2: $\boldsymbol{\Phi_{out}}$ has $\boldsymbol{\Phi}$ with $n_{in} = 2n+1$ and $n_{out} = 1$
 \end{itemize}
 
 \section{KAN Structure}
-Kolmogorov-Arnold networks require at least two layers, with a corrective depth of \(2n+1\) and \(n\). However, in practice, we can design larger networks with various structures beyond this minimum requirement \cite{KAN}.
+Kolmogorov-Arnold networks require at least two layers, with a correspective depth of \(2n+1\) and \(n\). However, in practice, we can design larger networks with various structures beyond this minimum requirement \cite{KAN}.
 
-\section{Splines functions}
+We can construct various topologies of Kolmogorov-Arnold networks by simply stacking layers and following these rules:
+\begin{itemize}
+    \item A KAN, as all MPLs, is a directed acyclic graph (DAG). 
+    \item Each KAN layer is fully connected to the preceding and succeeding layers apart from the first layer will only have a succeeding layer and the last layer will only have a preceding layer.
+    \item Each KAN layer is not connected with other layers
+    \item Each KAN layers connection $\textbf{x}_{l+1} = \boldsymbol{\Phi}_L \times \textbf{x}_l$ is defined by $\boldsymbol{\Phi_{L}} \in \Re^{n_{out},n_{in}}$ where $n_{in}$ is the dimension of the $\textbf{x}_l$ layer and $n_{out}$ is the dimension of the $\textbf{x}_l$ layer (Section~\ref{sec:ma}).
+    \item Every edge of al layer $\phi_{l,q,p}$ is associated with a one-dimensional activation function. 
+\end{itemize}
+
+Let’s say we have a KAN with $L$ layers, where the $l^{th}$ layer has shape $n_{l+1}$, $n_l$ and has formula $\textbf{x}_{l+1} = \boldsymbol{\Phi} \times \textbf{x}_l $. Then the whole network will be represented by:
+
+$$KAN(\textbf{x}) = \boldsymbol{\Phi_{L-1}} \times \dots \times \boldsymbol{\Phi_{1}} \times \boldsymbol{\Phi_{0}} \times \textbf{x}$$
+
+We can also rewrite the above equation as a series of summations, assuming the output dimension $n_L = 1$ and the associated multivariate
+continuous function $f$:  $f(x) \equiv KAN(x)$:
+
+$$f(\textbf{x}) = \sum_{i_{L-1}=1}^{n_{L-1}}  \phi_{L-1,i_L,i_{L-1}} (...(\sum_{i_1=1}^{n_{1}}  \phi_{1,i_2,i_{1}}(\sum_{i_0=1}^{n_{0}}  \phi_{0,i_1,i_{0}}(x_{i_0}))...)$$
+
+The network structure will be only a series of matrix-matrix multiplication of $ \boldsymbol{\Phi_{L-1}}, \dots, \boldsymbol{\Phi_{1}},\boldsymbol{\Phi_{0}}$  while a MLPs was a series of linear transformations $W_l$ and non-linear transformations $\sigma$:
+
+$$MLP(\textbf{x}) = \boldsymbol{W_{L-1}} \times \sigma \times \dots \times \boldsymbol{W_{1}} \times \sigma \times\boldsymbol{W_{0}} \times \textbf{x}$$
+
+Finally, a KAN can be conceptualized as a structured stack of KAN layers. Each KAN layer can be represented as a fully connected layer where every edge is associated with a one-dimensional (1D) function. The critical components that need to be defined are the representation and training of these activation functions which are the only learnable part of the function.
+
+\subsection{Activation functions}
+While the equation to compute, given an input, the KAN's output appears very simple, ensuring that the activation functions are well-trained is more complex. The most efficient technique involves leveraging spline functions. These functions are particularly effective for approximating the complexity and the non-linearities of the 1D functions associated with the KAN layers. This approach enhances both the flexibility and trainability of the network.
+
+Formally speaking, in KANs, every activation function $\phi_{l,q,p}(\cdot)$ is defined as follows:
+$$\phi(x) = w_bb(x) + w_sspline(x) $$
+
+where:
+\begin{itemize}
+    \item $w_b$ and $w_s$ are learnable weights; in principle are redundant since they can be absorbed into $b(x)$ and $spline(x)$, we still include these factors to better control the overall magnitude.
+    \item $b(x)$ is a fixed function called residual connection function defined by the $silu(x)$ function $b(x) = silu(x) = \frac{x}{1+e^{-x}}$
+    \item $spline(x)$ that is the real learnable function and in most of the cases is parametrized as a linear combination of B-splines function $spline(x)= \sum_i c_iB_i(x)$ where $c_i$s a re learnable and $i$ is the spline order.
+\end{itemize}
+
+\subsection{Beezer and B-splines functions}
+
+\subsection{Initialization and training}
+
+\subsection{Hyperparameters and complexity}
+The hyperparameters of a Kolmogorov-Arnold network are:
+\begin{itemize}
+    \item \textbf{$L$}: the depth of the KAN
+    \item $\textbf{n}_0$, ... ,$\textbf{n}_l$: width of each layer
+    \item \textbf{$G$},\textbf{$k$}: each spline is of order k (usually k = 3) on G intervals.
+\end{itemize}
+
+Then a KAN with hyperparameters \textbf{$L$},$\textbf{n}_0$, ... ,$\textbf{n}_l$,\textbf{$G$},\textbf{$k$} will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast an MLP with hyperparameters \textbf{$L$},\textbf{$N$} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability. 
 
 
-%--------------
-% CONCLUSION
-%--------------
 \section{Conclusions}
 
 %--------------
