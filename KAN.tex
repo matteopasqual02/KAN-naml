@@ -22,8 +22,8 @@
 \usepackage{algorithmic}
 \usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} 
 \usepackage{cleveref}
-\usepackage[square, numbers, sort&compress]{natbib} 
-\bibliographystyle{plain} 
+\usepackage[square, numbers]{natbib} 
+\bibliographystyle{unsrt}
 \usepackage{appendix}
 \usepackage{enumitem}
 \usepackage{amsthm,thmtools,xcolor} 
@@ -76,7 +76,7 @@ We propose a promising alternative to MLPs, called Kolmogorov-Arnold Networks (K
 
 Whereas MLPs are inspired by the universal approximation theorem, KANs are inspired by the Kolmogorov-Arnold representation theorem. Like MLPs, KANs have fully-connected structures. However, while MLPs place fixed activation functions on nodes “neurons”), KANs place learnable activation functions on edges (“weights”), as illustrated in Figure~\ref{fig:MLPKAN}. As a result, KANs have no linear weight matrices at all: instead, each weight parameter is replaced by a learnable 1D function parametrized as a spline. KANs’ nodes simply sum incoming signals without applying any non-linearities. 
 
-One might worry that KANs are hopelessly expensive, since each MLP’s weight parameter becomes KAN’s spline function. Fortunately, KANs usually allow much smaller computation graphs than MLPs embedding a 2-hidden-layer neural network.
+One might worry that KANs are hopelessly expensive since each MLP’s weight parameter becomes KAN’s spline function. Fortunately, KANs usually allow much smaller computation graphs than MLPs embedding a 2-hidden-layer neural network.
 
 Throughout this paper, we will show that KANs can lead to higher accuracy and improved interpretability over MLPs. We will show how, by leveraging the Kolmogorov-Arnold representation theorem, learnable activation functions and the absence of fixed-weight matrices allow KANs to efficiently capture complex relationships within the data\cite{KAN}.
 
@@ -188,7 +188,7 @@ $$MLP(\textbf{x}) = \boldsymbol{W_{L-1}} \times \sigma \times \dots \times \bold
 Finally, a KAN can be conceptualized as a structured stack of KAN layers. Each KAN layer can be represented as a fully connected layer where every edge is associated with a one-dimensional (1D) function. The critical components that need to be defined are the representation and training of these activation functions which are the only learnable part of the function.
 
 \subsection{Activation functions}
-While the equation to compute, given an input, the KAN's output appears very simple, ensuring that the activation functions are well-trained is more complex. The most efficient technique involves leveraging spline functions. These functions are particularly effective for approximating the complexity and the non-linearities of the 1D functions associated with the KAN layers. This approach enhances both the flexibility and trainability of the network.
+While the equation to compute, given an input, the KAN's output appears very simple, ensuring that the activation functions are well-trained is more complex. The most efficient technique involves leveraging spline functions. These functions are particularly effective for approximating the complexity and the non-linearities of the 1D functions associated with the KAN layers. This approach enhances both the flexibility and trainability of the network \cite{KAN}.
 
 Formally speaking, in KANs, every activation function $\phi_{l,q,p}(\cdot)$ is defined as follows:
 $$\phi(x) = w_bb(x) + w_sspline(x) $$
@@ -200,19 +200,92 @@ where:
     \item $spline(x)$ that is the real learnable function and in most of the cases is parametrized as a linear combination of B-splines function $spline(x)= \sum_i c_iB_i(x)$ where $c_i$s a re learnable and $i$ is the spline order.
 \end{itemize}
 
-\subsection{Beezer and B-splines functions}
+\subsection{Bézier and B-splines functions}
+Given the spline function now we have to define its shape. In literature, two main classes of functions are designed for KANs:
+\begin{itemize}
+    \item Bézier functions which consider all the domains but are complex to train \cite{bezier}
+    \item B-splines functions which consider only a local domain but are easy to train \cite{kan_intro}.
+\end{itemize}
+
+The problem we are going to solve is that the spline function should pass through some tag points that will be adjusted during the training phase. To solve it let's consider a dual problem: imagine a character $C$ must pass through $n$ points $(P_1, \dots,P_n)$. The most obvious way to traverse them is to go straight from $P_i$ to $P_{i+1}$ but this movement does not appear natural because we desire a smooth traversal movement that can be described as $(n-1)$-degree polynomial as in Figure~\ref{fig:bezier}.  
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/bezier.png}
+    \caption{Example of 4-degree polynomial curve}
+    \label{fig:bezier}
+\end{figure}
+
+The naive way to implement it is to define a function $h(x): \Re \to \Re$:
+
+$$h(x) = a_{n-1}x^{n-1} + a_{n-2}x^{n-2} + \dots + a_1x +a_0 $$
+
+then we can substitute points $(P_1, \dots,P_n)$ into the function $h$ and determine the values of the coefficients $(a_0, \dots,a_{n-1})$. Now we realize that we have to solve $N$ equations to determine the coefficients. Solving such a system of linear equations will be computationally expensive and almost infeasible for KANs. For this reason, we choose Bézier or B-splines functions.
+
+\subsubsection{Bézier}
+Bézier curves solve the problem more smartly. They provide a way to represent a smooth curve that passes near a set of control points without needing to solve a large system of equations as in Figure~\ref{fig:bezier2}.   
+\begin{figure}[H]
+    \centering
+    \subfloat{%
+        \includegraphics[width=0.55\linewidth]{Images/bezier2.png}%
+        \label{fig:bezier2a}%
+    }
+    \hfill
+    \subfloat{%
+        \includegraphics[width=0.30\linewidth]{Images/bezier3.png}%
+        \label{fig:bezier2b}%
+    }
+    \caption{Example of 4-degree bezier curves}
+    \label{fig:bezier2}
+\end{figure}
+
+
+We define the Bézier curve $b(t): \Re \to \Re$ noticing from low $n$ polynomials as in Figure~\ref{fig:bezier2} that the coefficients match with the binomial coefficients of $(1+t)^n$. Then we can derive the binomial definition of the Bézier curve as:
+
+\[
+\mathbf{b}(t) = \sum_{i=0}^n \binom{n}{i} (1-t)^{n-i} t^i \mathbf{P}_i, \quad t \in [0, 1]
+\]
+
+However, the problem is still the same as before. Having $N$ data points will result in a polynomial of degree $N-1$, which will be computationally expensive.
+
+\subsubsection{B-splines}
+B-splines provide a more efficient way to represent curves, especially when we deal with a large number of data. Unlike high-degree polynomials, B-splines use a series of lower-degree polynomial segments, which are connected smoothly.
+In other words, instead of extending Bézier curves to tens of hundreds of data points, which leads to an equally high degree of the polynomial, we use multiple lower-degree polynomials and connect them to form a smooth curve as in Figure~\ref{fig:bezier4}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/bezier4.png}
+    \caption{Example of 6-degree B-spline curve}
+    \label{fig:bezier4}
+\end{figure}
+
+When we have $n$ control points and we create $k$ degree polynomial Bézier curves, we get $(n-k)$ Bézier curves in the final Bsplines. We ensure also a certain continuity condition at the points where the curves meet:
+\begin{itemize}
+    \item Position Continuity: $C^0$ Continuity 
+    \item Tangent Continuity: $C^1$ Continuity  
+    \item Curvature Continuity: $C^2$ Continuity 
+\end{itemize}
+
+Similar to Bézier curves, we define the B-spline curve \( B(t): \mathbb{R} \to \mathbb{R} \) as a linear combination of the points \( P_i \) and their associated basis functions:
+
+
+\[
+\mathbf{B}(t) = \sum_{i=0}^n \mathbf{P}_i N_{i,k},
+\]
+
+Finally, B-spline functions are the best choice for KANs, even though they consider only a local domain, because their strength lies in their easy trainability, even as the number of points increases.
+
 
 \subsection{Initialization and training}
 
 \subsection{Hyperparameters and complexity}
 The hyperparameters of a Kolmogorov-Arnold network are:
 \begin{itemize}
-    \item \textbf{$L$}: the depth of the KAN
-    \item $\textbf{n}_0$, ... ,$\textbf{n}_l$: width of each layer
-    \item \textbf{$G$},\textbf{$k$}: each spline is of order k (usually k = 3) on G intervals.
+    \item \textbf{L}: the depth of the KAN
+    \item \textbf{N} = $\textbf{n}_0$, ... ,$\textbf{n}_l$: width of each layer
+    \item \textbf{G},\textbf{k}: each spline is of order k (usually k = 3) on G intervals.
 \end{itemize}
 
-Then a KAN with hyperparameters \textbf{$L$},$\textbf{n}_0$, ... ,$\textbf{n}_l$,\textbf{$G$},\textbf{$k$} will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast an MLP with hyperparameters \textbf{$L$},\textbf{$N$} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability. 
+Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k} will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast an MLP with hyperparameters \textbf{L, N} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability \cite{KAN}. 
 
 
 \section{Conclusions}
