@@ -167,10 +167,12 @@ Each layer has $n_{in}$ inputs and $n_{out}$ outputs and is mapped thought its r
     \item Layer 2: $\boldsymbol{\Phi_{out}}$ has $\boldsymbol{\Phi}$ with $n_{in} = 2n+1$ and $n_{out} = 1$
 \end{itemize}
 
-\section{KAN Structure}
-Kolmogorov-Arnold networks require at least two layers, with a correspective depth of \(2n+1\) and \(n\). However, in practice, we can design larger networks with various structures beyond this minimum requirement \cite{KAN}.
+\section{KAN}
+Kolmogorov-Arnold networks are more expressive than their basic formulation from the Kolmogorov-Arnold representation theorem. 
+According to the theorem, the layer requirements are two layers, with a corresponding depth of \(2n+1\) and \(n\). However, in practice, we can design networks with different topologies by adding layers or changing the definition of each layer \cite{KAN}. The key idea is to stack layers from the input to the output.
 
-We can construct various topologies of Kolmogorov-Arnold networks by simply stacking layers and following these rules:
+\subsection{Structure}
+With these premises, we can construct various topologies of Kolmogorov-Arnold networks by simply stacking layers and following these rules:
 \begin{itemize}
     \item A KAN, as all MPLs, is a directed acyclic graph (DAG). 
     \item Each KAN layer is fully connected to the preceding and succeeding layers apart from the first layer will only have a succeeding layer and the last layer will only have a preceding layer.
@@ -320,6 +322,28 @@ Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k}, con
 \subsubsection{Performance}
 The most important Paper~\cite{KAN} has presented many performance-related results that compare the performance of KANs with MLP on various dummy/toy datasets. We will demonstrate that KANs are more effective when we want to perform non-linear regression or PDE solving.
 
+In Figure~\ref{fig:re} the toy datasets are defined as follows:
+\begin{enumerate}
+    \item $f(x) = J_0(20x)$ (Bessel function): Represented by a $KAN(L=1,N=[1,1])$.
+    \item $f(x, y) = e^{\sin(\pi x)+y^2}$: Represented by a $KAN(L=3,N=[2, 1, 1])$.
+    \item $f(x, y) = xy$: Represented by a $KAN(L=3,N=[2, 2, 1])$.
+    \item $f(x1_,\dots , x_{100}) = e^{\frac{1}{100} 
+    \sum_{i=1}^{100} \sin^2(\frac{\pi x_i}{2})}$: Represented by a $KAN(L=3,N=[100, 1, 1])$.
+
+    \item $f(x_1, x_2, x_3, x_4) = e^ {\sin(x_1^2 + x_2^2)+ \sin(x_3^2 + x_4^2)}$ : Represented by a $KAN(L=3,N=[4,4, 2, 1])$.
+\end{enumerate}
+
+We train these KANs by increasing grid points every 200 steps, in total covering $G =
+{3, 5, 10, 20, 50, 100, 200, 500, 1000}$. We train MLPs with different depths and widths as baselines. Both MLPs and KANs are trained with LBFGS for 1800 steps in total.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/result.png}
+    \caption{Results for KAN with toy dataset}
+    \label{fig:re}
+\end{figure}
+
 In all the plots we can see that
 \begin{itemize}
     \item KANs consistently outperform MLPs, achieving significantly lower test loss across a range of parameters, and at much lower network depth (number of layers).
@@ -328,7 +352,9 @@ In all the plots we can see that
     \item The theoretical lines $N^{-4}$ for KAN and $N^{-2}$ for ideal models (ID), show that KANs closely follow their expected theoretical performance.
 \end{itemize}
 
-\section{Advanced Techniques}
+\subsection{Interpretability}
+\subsection{Advanced Techniques}
+\section{Code}
 \section{Conclusions}
 
 %--------------
