@@ -1,0 +1,82 @@
+\documentclass[12pt,a4paper]{article} 
+
+\usepackage{titlesec}
+\usepackage{color}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\graphicspath{{Images/}}
+\usepackage{eso-pic} 
+\usepackage{subfig} 
+\usepackage{caption} 
+\usepackage{transparent}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage[overload]{empheq}  
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} 
+\usepackage{cleveref}
+\usepackage[square, numbers]{natbib} 
+\bibliographystyle{unsrt}
+\usepackage{appendix}
+\usepackage{enumitem}
+\usepackage{amsthm,thmtools,xcolor} 
+\usepackage{comment} 
+\usepackage{fancyhdr} 
+\usepackage{lipsum} 
+\usepackage{tcolorbox} 
+\newcommand{\bea}{\begin{eqnarray}} 
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\e}[1]{\times 10^{#1}}  
+\newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}} 
+\newcommand{\pdev}[2]{\frac{\partial#1}{\partial#2}}
+
+\input{Configuration_files/config}
+
+% -> title of your work
+\renewcommand{\title}{KANs: Kolmogorov-Arnold Networks}
+% -> author name and surname
+\renewcommand{\author}{Pasqual Matteo Romilio}
+% -> MSc course
+\newcommand{\course}{Master's degree in Computer Science Engineering }
+% -> advisor name and surname
+\newcommand{\advisor}{Prof. Edie Miglio}
+% -> author ID
+\newcommand{\ID}{10765765}
+% -> academic year
+\newcommand{\YEAR}{2024-2025}
+% -> abstract (only in English)
+\renewcommand{\abstract}{Here goes Abstract }
+
+% -> key-words (only in English)
+\newcommand{\keywords}{}
+
+%------------------
+%	BEGIN OF YOUR DOCUMENT
+%------------------
+\begin{document}
+\input{Configuration_files/title_page}
+
+%--------------
+% PAPER
+%--------------
+\input{LATEX/chapters/1_intro}
+\input{LATEX/chapters/2_theorem}
+\input{LATEX/chapters/3_structure}
+\input{LATEX/chapters/3.2_splines}
+\input{LATEX/chapters/3.3_traning_performance}
+\input{LATEX/chapters/3.4_advanced_Interpretability}
+\input{LATEX/chapters/4_code}
+\input{LATEX/chapters/5_conclusion}
+
+%--------------
+% END
+%--------------
+\bibliography{bibliography.bib}
+\end{document}
