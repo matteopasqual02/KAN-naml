@@ -27,7 +27,7 @@ The hyperparameters of a Kolmogorov-Arnold network are:
 
 Then a KAN with hyperparameters \textbf{L},\textbf{N},\textbf{G},\textbf{k}, considering $N$ as the biggest $n_i \in N$, we will have in total $O(N^2L(G + k))  \simeq O(N^2LG)$ parameters. In contrast, an MLP with hyperparameters \textbf{L, N} needs only  $O(N^2L)$ parameters, which appears to be more efficient than KAN. Fortunately, KANs usually require much smaller N than MLPs, which not only saves parameters but also achieves better generalization and facilitates interpretability \cite{KAN}. 
 
-\subsubsection{Performance}
+\subsubsection{Performance (Accuracy)}
 The most important Paper~\cite{KAN} has presented many performance-related results that compare the performance of KANs with MLP on various dummy/toy datasets. We will demonstrate that KANs are more effective when we want to perform non-linear regression or PDE solving.
 
 In Figure~\ref{fig:re} the toy datasets are defined as follows:
@@ -60,3 +60,17 @@ In all the plots we can see that
     \item MLP's performance almost stagnates with increasing the number of parameters.
     \item The theoretical lines $N^{-4}$ for KAN and $N^{-2}$ for ideal models (ID), show that KANs closely follow their expected theoretical performance.
 \end{itemize}
+
+\subsubsection{Drawbacks}
+Currently, the biggest bottleneck of KANs lies in their slow training. KANs are typically 10 times slower than MLPs, given the same number of parameters (though KANs require fewer parameters than MLPs to accomplish the same task). This is primarily caused by the complex reshaping of $\text{spline}(x)$, particularly on B-spline control points.
+
+We should be honest that the first paper on KANs was pre-released in June 2024 \cite{KAN}, so at this point, no one is focused on optimization. This issue will likely be addressed as an engineering problem to be improved in the future rather than a fundamental limitation.
+
+If one wants to train a model quickly, MLPs should be used. In other cases, however, KANs can be comparable to or even better than MLPs. The decision tree in Figure~\ref{fig:dtree} can assist in determining when to use a KAN. In summary, if you value interpretability and/or accuracy and slow training is not a major concern, we suggest trying KANs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{LATEX//Images/MLP_KAN.png}
+    \caption{MLP vs KAN: decision tree}
+    \label{fig:dtree}
+\end{figure}
