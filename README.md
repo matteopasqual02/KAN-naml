@@ -4,7 +4,7 @@ NAML project at polimi in 2024-2025
 GRADE ?/30
 
 ## Introduction
-<img src="LATEX/Images/MLP-KAN.PNG" width=500 px align="right" >
+<img src="LATEX/Images/MLP-KAN.PNG" width=600 px align="right" >
 
 Multi-layer perceptrons (MLPs), also known as fully-connected feedforward neural networks, are foundational building blocks of today’s deep learning models. The importance of MLPs can never be overstated, since they are the default models in machine learning for approximating non-linear functions, due to their expressive power guaranteed by the universal approximation theorem. 
 
