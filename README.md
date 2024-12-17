@@ -21,7 +21,7 @@ Throughout this paper, we will show that KANs can lead to higher accuracy and im
 ## Paper and Presentation
 [KANs_paper.pdf](KANs_paper.pdf): the Kolmogorov-Arnold-Network paper 
 
-[KANS_presentation.ppt](): the Kolmogorov-Arnold-Network ppt presentation
+[KANs_presentation.ppt](): the Kolmogorov-Arnold-Network ppt presentation
 
 ## Code
-[KANS_code.ipynb](KANS_code.ipynb): the Kolmogorov-Arnold-Network code example
+[KANs_code.ipynb](KANs_code.ipynb): the Kolmogorov-Arnold-Network code example
