@@ -66,11 +66,11 @@ Currently, the biggest bottleneck of KANs lies in their slow training. KANs are 
 
 We should be honest that the first paper on KANs was pre-released in June 2024 \cite{KAN}, so at this point, no one is focused on optimization. This issue will likely be addressed as an engineering problem to be improved in the future rather than a fundamental limitation.
 
-If one wants to train a model quickly, MLPs should be used. In other cases, however, KANs can be comparable to or even better than MLPs. The decision tree in Figure~\ref{fig:dtree} can assist in determining when to use a KAN. In summary, if you value interpretability and/or accuracy and slow training is not a major concern, we suggest trying KANs.
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\linewidth]{LATEX//Images/MLP_KAN.png}
     \caption{MLP vs KAN: decision tree}
     \label{fig:dtree}
 \end{figure}
+
+If one wants to train a model quickly, MLPs should be used. In other cases, however, KANs can be comparable to or even better than MLPs. The decision tree in Figure~\ref{fig:dtree} can assist in determining when to use a KAN. In summary, if you value interpretability and/or accuracy and slow training is not a major concern, we suggest trying KANs.
