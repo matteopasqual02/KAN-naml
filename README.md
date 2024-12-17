@@ -18,8 +18,8 @@ One might worry that KANs are hopelessly expensive, since each MLP’s weight pa
 
 Throughout this paper, we will show that KANs can lead to higher accuracy and improved interpretability over MLPs. We will show how, by leveraging the Kolmogorov-Arnold representation theorem, learnable activation functions and the absence of fixed-weight matrices allow KANs to efficiently capture complex relationships within the data.
 
-##Paper
+## Paper
 link to paper
 
-##Code
+## Code
 link to code
