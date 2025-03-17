@@ -1,7 +1,7 @@
 # KAN: Kolmogorov-Arnold-Network
 NAML project at polimi in 2024-2025
 
-GRADE ?/30
+GRADE 30/30
 
 ## Introduction
 <img src="LATEX/Images/MLP-KAN.PNG" width=500 px align="right" >
